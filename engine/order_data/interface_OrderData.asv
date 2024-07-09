@@ -1,0 +1,388 @@
+function varargout = interface_OrderData(varargin)
+% INTERFACE_ORDERDATA M-file for interface_OrderData.fig
+%      INTERFACE_ORDERDATA, by itself, creates a new INTERFACE_ORDERDATA or raises the existing
+%      singleton*.%
+%      H = INTERFACE_ORDERDATA returns the handle to a new INTERFACE_ORDERDATA or the handle to
+%      the existing singleton*.
+%
+%      INTERFACE_ORDERDATA('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in INTERFACE_ORDERDATA.M with the given input arguments.
+%
+%      INTERFACE_ORDERDATA('Property','Value',...) creates a new INTERFACE_ORDERDATA or raises the
+%      existing singleton*.  Starting from the left, property value pairs are
+%      applied to the GUI before interface_OrderData_OpeningFunction gets called.  An
+%      unrecognized property name or invalid value makes property application
+%      stop.  All inputs are passed to interface_OrderData_OpeningFcn via varargin.
+%
+%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
+%      instance to run (singleton)".
+%
+% See also: GUIDE, GUIDATA, GUIHANDLES
+
+% Edit the above text to modify the response to help interface_OrderData
+
+% Last Modified by GUIDE v2.5 05-Jun-2007 21:16:34
+
+% Begin initialization code - DO NOT EDIT
+gui_Singleton = 1;
+gui_State = struct('gui_Name',       mfilename, ...
+                   'gui_Singleton',  gui_Singleton, ...
+                   'gui_OpeningFcn', @interface_OrderData_OpeningFcn, ...
+                   'gui_OutputFcn',  @interface_OrderData_OutputFcn, ...
+                   'gui_LayoutFcn',  [] , ...
+                   'gui_Callback',   []);
+if nargin && ischar(varargin{1})
+    gui_State.gui_Callback = str2func(varargin{1});
+end
+
+if nargout
+    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+else
+    gui_mainfcn(gui_State, varargin{:});
+end
+% End initialization code - DO NOT EDIT
+
+
+% --- Executes just before interface_OrderData is made visible.
+function interface_OrderData_OpeningFcn(hObject, eventdata, handles, varargin)
+% This function has no output args, see OutputFcn.
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% varargin   command line arguments to interface_OrderData (see VARARGIN)
+
+% Choose default command line output for interface_OrderData
+handles.output = hObject;
+
+% Update handles structure
+guidata(hObject, handles);
+
+% =========================================================================    
+% ========================== SET INITIAL CONDITIONS =======================
+
+% constants for the computation
+handles.n_groups    = 89; % Number of energy groups
+handles.n_reactions = 34; % Numver of reactions in the library
+% set input format to "browse for .mat file
+handles.input_format = 1;
+
+guidata(hObject, handles);
+
+% UIWAIT makes interface_OrderData wait for user response (see UIRESUME)
+% uiwait(handles.figure1);
+
+
+% --- Outputs from this function are returned to the command line.
+function varargout = interface_OrderData_OutputFcn(hObject, eventdata, handles) 
+% varargout  cell array for returning output args (see VARARGOUT);
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Get default command line output from handles structure
+varargout{1} = handles.output;
+
+
+% --- Executes on selection change in input_format.
+function input_format_Callback(hObject, eventdata, handles)
+% hObject    handle to input_format (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = get(hObject,'String') returns input_format contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from input_format
+val = get(hObject,'Value');
+switch val
+    case 1
+        handles.input_format = 1;
+    case 2
+        handles.input_format = 2;
+    case 3
+        handles.input_format = 3;        
+end
+guidata(hObject,handles)
+
+% --- Executes during object creation, after setting all properties.
+function input_format_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to input_format (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+% =========================================================================
+% =========================================================================
+
+
+% --- Executes on button press in activity.
+function activity_Callback(hObject, eventdata, handles)
+% hObject    handle to activity (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if handles.input_format == 1
+    [name, path] = uigetfile({'*.mat'},'Select MatLab Data File');
+    if path == 0
+        return
+    end    
+    path_A = [path name];
+    load(path_A);
+    handles.A = A;
+elseif handles.input_format == 2
+    [name, path] = uigetfile({'*.txt'},'Select text Data File');
+    if path == 0
+        return
+    end    
+    path_A = [path name];
+    fid=fopen(path_A);
+    A = fscanf(fid,'%e');
+    handles.A = A;
+    fclose(fid);
+elseif handles.input_format == 3
+    [name, path] = uigetfile({'*.xls'},'Select Exel Data File');
+    if path == 0
+        return
+    end    
+    path_A = [path name];
+    A = xlsread(path_A);
+    handles.A = A;    
+else
+    sprintf('not defined jet')
+end
+guidata(hObject,handles)
+if isempty(handles.A)
+    sprintf('Error!\nActivity Data was NOT saved')
+else
+    sprintf('Activity Data accepted')
+end
+
+% =========================================================================
+% =========================================================================
+
+
+% --- Executes on button press in activity_sd.
+function activity_sd_Callback(hObject, eventdata, handles)
+% hObject    handle to activity_sd (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if handles.input_format == 1
+    [name, path] = uigetfile({'*.mat'},'Select MatLab Data File');
+    if path == 0
+        return
+    end    
+    path_sd_A = [path name];
+    load(path_sd_A);
+    handles.sd_A = sd_A;
+elseif handles.input_format == 2
+    [name, path] = uigetfile({'*.txt'},'Select text Data File');
+    if path == 0
+        return
+    end    
+    path_sd_A = [path name];
+    fid=fopen(path_sd_A);
+    sd_A = fscanf(fid,'%e');
+    handles.sd_A = sd_A;
+    fclose(fid);
+elseif handles.input_format == 3
+    [name, path] = uigetfile({'*.xls'},'Select Exel Data File');
+    if path == 0
+        return
+    end    
+    path_sd_A = [path name];
+    sd_A = xlsread(path_sd_A);
+    handles.sd_A = sd_A;    
+else
+    sprintf('not defined jet')
+end
+guidata(hObject,handles)
+if isempty(handles.sd_A)
+    sprintf('Error!\nActivity Standard Deviations were NOT saved')
+else
+    sprintf('Activity Standard Deviations accepted')
+end
+
+% =========================================================================
+% =========================================================================
+
+
+% --- Executes on button press in activity_cor.
+function activity_cor_Callback(hObject, eventdata, handles)
+% hObject    handle to activity_cor (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if handles.input_format == 1
+    [name, path] = uigetfile({'*.mat'},'Select MatLab Data File');
+    if path == 0
+        return
+    end    
+    path_Cor_A = [path name];
+    load(path_Cor_A);
+    handles.Cor_A = Cor_A;
+elseif handles.input_format == 2
+    [name, path] = uigetfile({'*.txt'},'Select text Data File');
+    if path == 0
+        return
+    end    
+    path_Cor_A = [path name];
+    fid=fopen(path_Cor_A);
+    Cor_A = fscanf(fid,'%e');
+    handles.Cor_A = Cor_A;
+    fclose(fid);
+elseif handles.input_format == 3
+    [name, path] = uigetfile({'*.xls'},'Select Exel Data File');
+    if path == 0
+        return
+    end    
+    path_Cor_A = [path name];
+    Cor_A = xlsread(path_Cor_A);
+    handles.Cor_A = Cor_A;    
+else
+    sprintf('not defined jet')
+end
+guidata(hObject,handles)
+if isempty(handles.Cor_A)
+    sprintf('Error!\nActivity Correlation Matrix was NOT saved')
+else
+    sprintf('Activity Correlation Matrix accepted')
+end
+
+% =========================================================================
+% =========================================================================
+
+
+% --- Executes on button press in prior_order.
+function prior_order_Callback(hObject, eventdata, handles)
+% hObject    handle to prior_order (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+if handles.input_format == 1
+    [name, path] = uigetfile({'*.mat'},'Select MatLab Data File');
+    if path == 0
+        return
+    end    
+    path_m = [path name];
+    load(path_m);
+    handles.m = m;
+elseif handles.input_format == 2
+    [name, path] = uigetfile({'*.txt'},'Select text Data File');
+    if path == 0
+        return
+    end    
+    path_m = [path name];
+    fid=fopen(path_m);
+    m = fscanf(fid,'%e');
+    handles.m = m;
+    fclose(fid);
+elseif handles.input_format == 3
+    [name, path] = uigetfile({'*.xls'},'Select Exel Data File');
+    if path == 0
+        return
+    end    
+    path_m = [path name];
+    m = xlsread(path_m);
+    handles.m = m;    
+else
+    sprintf('not defined jet')
+end
+guidata(hObject,handles)
+if isempty(handles.m)
+    sprintf('Error!\nVector of prior order of the Activity Data was NOT saved')
+else
+    sprintf('Vector of prior order of the Activity Data accepted')
+end
+
+% =========================================================================
+% =========================================================================
+
+
+% --- Executes on button press in create_data.
+function create_data_Callback(hObject, eventdata, handles)
+% hObject    handle to create_data (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+nr = handles.n_reactions;
+% Transfer the input Data
+A     = handles.A;
+sd_A  = handles.sd_A;
+Cor_A = handles.Cor_A;
+m_o   = handles.m;    
+
+% check dimensions of input data
+if (length(A)~=length(sd_A)) || (length(A)~=length(Cor_A)) || (length(A)~=length(m_o))
+    sprintf('Conflict in the Dimension of the provided Data\nPlease check the input.')
+    return
+end
+
+% =========================================================================
+% interface_orderdata sorting the data
+    
+% create Vector m for 'reload option' in NSVA_E2
+    m = zeros(nr,1); 
+    for k = 1:length(m_o)
+        m(m_o(k)) = 1;
+    end
+    
+    tmp = [A sd_A m_o];
+    Sorted = sortrows(tmp,[3]);
+    A    = Sorted(:,1);
+    sd_A = Sorted(:,2);
+    
+    dim = size(Cor_A); 
+    tmp = [Cor_A, m_o];
+    st_row = sortrows(tmp,[dim(2)+1]);
+    tmp = [st_row(:, 1:dim(2))', m_o];
+    st_row = sortrows(tmp,[dim(1)+1]);
+    Cor_A = st_row(:, 1:dim(1))';
+    
+% % use the bubble sort algoritm to order the activity data
+% % according to the atomic numbers of the involved isotopes
+%     for i = 1:length(m_o)-1
+%         for k = 1:length(m_o)-i
+%             if m_o(k) > m_o(k+1)
+%                 % order the vector
+%                 tmp_m_o  = m_o(k);
+%                 m_o(k)   = m_o(k+1);
+%                 m_o(k+1) = tmp_m_o;
+%                 % order the activity
+%                 tmp_a   = A(k);
+%                 A(k)   = A(k+1);
+%                 A(k+1) = tmp_a;                
+%                 % order the activity sd
+%                 tmp_sd     = sd_A(k);
+%                 sd_A(k)   = sd_A(k+1);
+%                 sd_A(k+1) = tmp_sd;
+%                 % order the activity cor
+%                 tmp_cor_r   = Cor_A(k,:); % row
+%                 Cor_A(k,:) = Cor_A(k+1,:);
+%                 Cor_A(k+1,:) = tmp_cor_r;
+%                 tmp_cor_c   = Cor_A(:,k); % column                
+%                 Cor_A(:,k) = Cor_A(:,k+1);
+%                 Cor_A(:,k+1) = tmp_cor_c;
+%             end
+%         end
+%     end
+    
+% =========================================================================
+% save data in MatLab data files 
+path_E1 = [pwd '\Re-Ordered Data\'];
+
+% save in MatLab data files
+save([path_E1 '\activity.mat'], 'A');
+save([path_E1 '\activity_sd.mat'], 'sd_A');
+save([path_E1 '\activity_cor.mat'], 'Cor_A');
+save([path_E1 '\m.mat'], 'm');
+
+% save in Exel files
+xlswrite([path_E1 '\activity'], A);
+xlswrite([path_E1 '\activity_sd'], sd_A);
+xlswrite([path_E1 '\activity_cor'], Cor_A);
+xlswrite([path_E1 '\m'], m);
+
+sprintf('Data was ordered successfully and has been saved in folder:\n\tactivity')
+
+% =========================================================================
+% =========================================================================

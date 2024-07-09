@@ -1,0 +1,115 @@
+function [Res_Fcn Ni_Sigma] = loadResponseFcn(Res_Fcn_type)
+% This subfunction loads the response function
+
+%initialize data
+Res_Fcn = [];
+
+switch Res_Fcn_type
+    case 'Total'
+        filename = '\engine\ResponseFcn\Total.txt';
+        path = pwd;
+        path_Res_Fcn = [path filename];
+        clear filename path;
+        if exist(path_Res_Fcn,'file') == 2
+            Res_Fcn = load(path_Res_Fcn);
+        else
+            warndlg('text file with response function is not available in the folder ResponseFcn','Warning')
+            Res_Fcn = [];
+            return;
+        end
+    case '001MeV'
+        filename = '\engine\ResponseFcn\001MeV.txt';
+        path = pwd;
+        path_Res_Fcn = [path filename];
+        clear filename path;
+        if exist(path_Res_Fcn,'file') == 2
+            Res_Fcn = load(path_Res_Fcn);
+        else
+            warndlg('text file with response function is not available in the folder ResponseFcn','Warning')
+            Res_Fcn = [];
+            return;
+        end
+    case '1MeV'
+        filename = '\engine\ResponseFcn\1Mev.txt';
+        path = pwd;
+        path_Res_Fcn = [path filename];
+        clear filename path;
+        if exist(path_Res_Fcn,'file') == 2
+            Res_Fcn = load(path_Res_Fcn);
+        else
+            warndlg('text file with response function is not available in the folder ResponseFcn','Warning')
+            Res_Fcn = [];
+            return;
+        end
+    case '3MeV'
+        filename = '\engine\ResponseFcn\3Mev.txt';
+        path = pwd;
+        path_Res_Fcn = [path filename];
+        clear filename path;
+        if exist(path_Res_Fcn,'file') == 2
+            Res_Fcn = load(path_Res_Fcn);
+        else
+            warndlg('text file with response function is not available in the folder ResponseFcn','Warning')
+            Res_Fcn = [];
+            return;
+        end
+    case 'Si_Disp_Kerma'
+        filename = '\engine\ResponseFcn\SiDispKerma.txt';
+        path = pwd;
+        path_Res_Fcn = [path filename];
+        clear filename path;
+        if exist(path_Res_Fcn,'file') == 2
+            Res_Fcn = load(path_Res_Fcn);
+        else
+            warndlg('text file with response function is not available in the folder ResponseFcn','Warning')
+            Res_Fcn = [];
+            return;
+        end
+    case 'UserDefined'
+        [filename, pathname, filterindex] = uigetfile(...
+            {'*.mat','MatLab Data File (*.mat)';...
+            '*.xls','Exel Data File (*.xls)';...
+            '*.txt','Text Data File (*.txt)'},...
+            'Pick a Response Function');
+        if isequal(filename,0) | isequal(pathname,0)
+            sprintf('User pressed cancel\n')
+            return;
+        else
+            switch filterindex
+                case 1
+                    Res_Fcn = load(fullfile(pathname,filename));
+                case 2
+                    Res_Fcn = xlsread(fullfile(pathname,filename));
+                case 3
+                    Res_Fcn = load(fullfile(pathname,filename));
+                otherwise
+                    warndlg('Activity Data cannot be loaded!','!! Warning !!');
+                    return;
+            end
+        end
+
+        filename = '\engine\ResponseFcn\SiDispKerma.txt';
+        path = pwd;
+        path_Res_Fcn = [path filename];
+        clear filename path;
+        if exist(path_Res_Fcn,'file') == 2
+            Res_Fcn = load(path_Res_Fcn);
+        else
+            warndlg('text file with response function is not available in the folder ResponseFcn','Warning')
+            Res_Fcn = [];
+            return;
+        end
+end
+% Load cross-section of Nickel
+filename = '\engine\ResponseFcn\ni58p-void-bare.txt';
+path = pwd;
+path_Ni_Sigma = [path filename];
+clear filename path;
+if exist(path_Ni_Sigma,'file') == 2
+    Ni_Sigma = load(path_Ni_Sigma);
+else
+    warndlg('text file with cross-section of Nickel is not available in the folder ResponseFcn','Warning')
+    Ni_Sigma = [];
+    return;
+end
+end

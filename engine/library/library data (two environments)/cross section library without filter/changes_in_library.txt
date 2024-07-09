@@ -1,0 +1,29 @@
+>> CrS(:,34) = Crs(:,33);
+>> CrS(:,33) = Crs(:,32);
+>> CrS(:,32) = Crs(:,31);
+>> CrS(:,31) = Crs(:,30);
+>> CrS(:,30) = Crs(:,29);
+>> CrS(:,29) = np_old;
+>>
+>> Cova(:,:,34) = Cova(:,:,33);
+>> Cova(:,:,33) = Cova(:,:,32);
+>> Cova(:,:,32) = Cova(:,:,31);
+>> Cova(:,:,31) = Cova(:,:,30);
+>> Cova(:,:,30) = Cova(:,:,29);
+>> 
+>> Cor(:,:,34) = Cor(:,:,33);
+>> Cor(:,:,33) = Cor(:,:,32);
+>> Cor(:,:,32) = Cor(:,:,31);
+>> Cor(:,:,31) = Cor(:,:,30);
+>> Cor(:,:,30) = Cor(:,:,29);
+>> 
+>> SD(:,34) = SD(:,33);
+>> SD(:,33) = SD(:,32);
+>> SD(:,32) = SD(:,31);
+>> SD(:,31) = SD(:,30);
+>> SD(:,30) = SD(:,29);
+
+Correlarion / Covariance Matricies and Standart Deviations are adjusted. The Data
+from Np237f was used for both, with and without Borum Filter. The Data for rmleu,
+rmldu and rmlpu for the unfiltered case is used for the Cross Seciton Data for the
+Vorum Filter as well.

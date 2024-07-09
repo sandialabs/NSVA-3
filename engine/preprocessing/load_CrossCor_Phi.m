@@ -1,0 +1,64 @@
+function load_CrossCor_Phi(i,j,hObject,handles)
+% This function loads the Fluence cross correlation matrix between
+% environment i & j
+
+[filename, pathname, filterindex] = uigetfile(...
+    {'*.mat','MatLab Data File (*.mat)';...
+    '*.xls','Exel Data File (*.xls)';...
+    '*.txt','Text Data File (*.txt)'},...
+    sprintf('Pick the Fluence Cross Correlation between Env.%i & Env.%i',i,j));
+if isequal(filename,0) | isequal(pathname,0)
+    sprintf('User pressed cancel\n Data was NOT saved')
+    return;
+else
+    switch filterindex
+        case 1
+            load(fullfile(pathname,filename));
+            if ~exist('CCF','var')
+                warndlg('Cross correlation data could not be found in the loaded data. Data is rejected','Warning');
+                return;
+            end
+        case 2
+            CCF = xlsread(fullfile(pathname,filename));
+        case 3
+            CCF = load(fullfile(pathname,filename));
+        otherwise
+            warndlg('Fluence Cross Correlation cannot be loaded!','!! Warning !!');
+            return;
+    end
+end
+% Check for proper size of loaded data -----------------------
+[row_CCF,col_CCF] = size(CCF);
+if ~((handles.Data_Misc.n_groups == row_CCF) && (handles.Data_Misc.n_groups == col_CCF))
+    warndlg('The size of the cross correlation matrix does not fit with the loaded Environments. Loading aborted!','Warning');
+    return;
+end
+% -------------------------------------------------------------------------
+
+sprintf('Fluence Cross Correlation Matrix between Env.%i & Env.%i accepted',i,j)
+
+% Update liststring
+liststring = get(handles.Listbox,'String');
+flag_liststring = false;
+for counter = 1:length(liststring); % check if CrossCor_Phi %i %i exist already in liststring
+    if strcmp(liststring{counter},sprintf('CrossCor_Phi %i %i',i,j))
+        flag_liststring = true;
+    end % if
+    if strcmp(liststring{counter},sprintf('CrossCor_Phi %i %i',j,i))% check if opposite CCA exist
+        flag_liststring = true;
+        liststring{counter} = sprintf('CrossCor_Phi %i %i',i,j);% rename in liststring
+    end % if
+end % for
+if ~flag_liststring % if the string CrossCor_Phi %i %i does not exist, then add it to liststring
+    liststring{length(liststring)+1} = sprintf('CrossCor_Phi %i %i',i,j);
+end % if
+% Update Listbox
+set(handles.Listbox,'String',liststring);
+
+% Save data to handles
+handles.Data_Cor_Phi{i,j} = CCF;
+handles.Data_Cor_Phi{j,i} = CCF';
+
+% Update handles structure
+guidata(hObject, handles);
+
