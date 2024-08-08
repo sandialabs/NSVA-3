@@ -1,0 +1,87 @@
+function Create_figures_2(handles)
+
+% Coming soon extend checks for availability of Data
+if ~isfield(handles,'Data_Input')
+    warndlg('No input data available yet. Include data!','Warning')
+    return;
+end
+if ~isfield(handles,'Data_Output')
+    warndlg('No result data available yet. Run adjustment first!','Warning')
+    return;
+end
+if ~isfield(handles,'Data_Cov_Phi')
+    warndlg('Data_Cov_Phi not available','Warning')
+    return;
+end
+if ~isfield(handles.Data_Output,'Phi_1_k_sd_adjusted')
+    warndlg('Phi_1_k_sd_adjusted not available','Warning')
+    return;
+end
+if ~isfield(handles.Data_Output,'Phi_1_k_adjustment_pc')
+    warndlg('Phi_1_k_adjustment_pc not available','Warning')
+    return;
+end
+
+
+Data_Output = handles.Data_Output;
+
+% read energy bins
+filename = '\engine\library\library data\energies.txt';
+path = pwd;
+path_energies = [path filename];
+clear filename path;
+if exist(path_energies,'file') == 2
+    energy = load(path_energies);
+else
+    warndlg('text file with energy bins is not available in the folder libary data','Warning')
+    return;
+end
+% Construct energy list: Each list entity contains the average energy of a group
+for k = 1:handles.Data_Misc.n_groups
+    energy_list(k) = (energy(k,2)+energy(k+1,2))/2;
+end
+% Sort energy bins in descend order
+energy_list = sort(energy_list,'descend'); % This makes sure that the energy bins 
+% are always from highest to lowest, no matter how the user provides the data
+
+% Seperate Data ===================================================
+for i=1:handles.Data_Misc.n_Env
+    % Get size of Am, Phi
+    [row_Phi(i),col_Phi(i)] = size(handles.Data_Cov_Phi{i,i});
+    % reassign input data
+    Fluence_Standard_Deviation_Prior{i,1} = handles.Data_Input{i,4};
+end %for
+% Fluences Standard Deviation
+Fluence_Standard_Deviation_Adjusted = mat2cell(Data_Output.Phi_1_k_sd_adjusted,row_Phi,[1]);
+% Fluences adjustment in %
+Fluence_Adjustment_in_Percent = mat2cell(Data_Output.Phi_1_k_adjustment_pc,row_Phi,[1]);
+
+for i=1:handles.Data_Misc.n_Env
+   % Create figure
+    figure;
+    % prior standard deviation of neutron spectrum in percent
+    semilogx(energy_list,Fluence_Standard_Deviation_Prior{i}*100,...
+                's',...
+                'MarkerEdgeColor','b',...
+                'MarkerFaceColor','b',...
+                'MarkerSize',5);hold on
+    % adjustment of the standard deviation in per cent
+    semilogx(energy_list,Fluence_Adjustment_in_Percent{i},...
+                'd',...
+                'MarkerEdgeColor','r',...
+                'MarkerFaceColor','r',...
+                'MarkerSize',5);
+    % adjusted standard deviation of neutron spectrum in percent
+    semilogx(energy_list,Fluence_Standard_Deviation_Adjusted{i},...
+                '^',...
+                'MarkerEdgeColor','g',...
+                'MarkerFaceColor','g',...
+                'MarkerSize',5);
+    legend('prior standard deviations','Adjustment in %','adjusted standard deviations');
+    title(sprintf('ChiSq: %g',Data_Output.chi_square));
+    ylabel('Percent');
+    xlabel('Energy (MeV)');
+    set(gca,'YGrid','on');
+    set(gcf,'Name',sprintf('Environment %i: Prior and adjusted neutron spectrum',i));
+end
+end

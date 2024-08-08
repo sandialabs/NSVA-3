@@ -1,0 +1,207 @@
+function Data_Output = Equation(Data_Input,Data_Cov_Phi,Data_Cov_A,Data_Misc)
+%Data_Input = {Am_i sd_Am_i | Phi_i sd_Phi_i | m_i j_i | S_phi_i S_Sigma_i | decision_i} for ENV i
+%Data_Cor_Phi  = { CCPhi_11  CCPhi_12  CCPhi_13  CCPhi_14
+%                  CCPhi_12' CCPhi_22  CCPhi_23  CCPhi_24
+%                  CCPhi_13' CCPhi_23' CCPhi_33  CCPhi_34  (Comment: CCA_ii = Cor_i)   
+%                  CCPhi_14' CCPhi_24' CCPhi_34' CCPhi_44 ...}
+%Data_Cor_A  = { CCA_11  CCA_12  CCA_13  CCA_14
+%                CCA_12' CCA_22  CCA_23  CCA_24
+%                CCA_13' CCA_23' CCA_33  CCA_34  (Comment: CCA_ii = Cor_i)   
+%                CCA_14' CCA_24' CCA_34' CCA_44}
+%Data_Cov_Phi  = { CCPhi_11  CCPhi_12  CCPhi_13  CCPhi_14
+%                  CCPhi_12' CCPhi_22  CCPhi_23  CCPhi_24
+%                  CCPhi_13' CCPhi_23' CCPhi_33  CCPhi_34  (Comment: CCA_ii = Cov_i)   
+%                  CCPhi_14' CCPhi_24' CCPhi_34' CCPhi_44 ...}
+%Data_Cov_A  = { CCA_11  CCA_12  CCA_13  CCA_14
+%                CCA_12' CCA_22  CCA_23  CCA_24
+%                CCA_13' CCA_23' CCA_33  CCA_34  (Comment: CCA_ii = Cov_i)   
+%                CCA_14' CCA_24' CCA_34' CCA_44}
+%Data_Misc.n_Env = number of Enviroments
+%Data_Misc.Cov_Sigma = Covariance of the Cross-sections
+%Data_Misc.Sigma_stacked = Cross-sections in a column vector
+%Data_Misc.Sigma = Cross-sections in matrix form
+%Data_Output.Phi_1_k_adjusted = adjusted Fluences
+
+% =========================================================================
+% Creating required Matrices
+% =========================================================================
+% Creating Cov_Phi_S_Phi = Cov_Phi_1_k * (S_Phi_1_k)'
+Cov_Phi_S_Phi = {};
+for i = 1:Data_Misc.n_Env
+    for j = 1:Data_Misc.n_Env
+        Cov_Phi_S_Phi{i,j} = Data_Cov_Phi{i,j}*Data_Input{j,7}';
+    end
+end
+Cov_Phi_S_Phi = sparse(cell2mat(Cov_Phi_S_Phi));
+
+% Creating S_Phi_Cov_Phi = S_Phi_1_k*Data_Cov_Phi_mat
+S_Phi_Cov_Phi = {};
+for i = 1:Data_Misc.n_Env
+    for j = 1:Data_Misc.n_Env
+        S_Phi_Cov_Phi{i,j} = Data_Input{i,7}*Data_Cov_Phi{i,j};
+    end
+end
+S_Phi_Cov_Phi = sparse(cell2mat(S_Phi_Cov_Phi));
+
+% Creating S_Phi_Cov_Phi_S_Phi = S_Phi_1_k * Cov_Phi_1_k * (S_Phi_1_k)'
+S_Phi_Cov_Phi_S_Phi = {};
+for i = 1:Data_Misc.n_Env
+    for j = 1:Data_Misc.n_Env
+        S_Phi_Cov_Phi_S_Phi{i,j} = Data_Input{i,7}*Data_Cov_Phi{i,j}*Data_Input{j,7}';
+    end
+end
+S_Phi_Cov_Phi_S_Phi = sparse(cell2mat(S_Phi_Cov_Phi_S_Phi));
+
+% Creating S_Sigma_1_k = stack of S_Sigma
+S_Sigma_1_k = {};
+for i = 1:Data_Misc.n_Env
+    S_Sigma_1_k{i,1} = Data_Input{i,8};
+end
+S_Sigma_1_k = sparse(cell2mat(S_Sigma_1_k));
+
+% Block diagonal sparse matrix of Cov_Sigma
+Block_Cov_Sigma = block_diag_3D(Data_Misc.Cov_Sigma); 
+
+% Transform cell to mat
+Data_Cov_A_mat = sparse(cell2mat(Data_Cov_A));
+Data_Cov_Phi_mat = sparse(cell2mat(Data_Cov_Phi));
+
+h = S_Phi_Cov_Phi_S_Phi + S_Sigma_1_k*Block_Cov_Sigma*S_Sigma_1_k' + Data_Cov_A_mat; % Attention: h is not inverted yet
+
+% Creating Phi_1_k = stack of Phi_i
+Phi_1_k = {};
+for i = 1:Data_Misc.n_Env
+    Phi_1_k{i,1} = Data_Input{i,3};
+end
+Phi_1_k = sparse(cell2mat(Phi_1_k));
+
+% Creating Am_1_k = stack of Am_i
+Am_1_k = {};
+for i = 1:Data_Misc.n_Env
+    Am_1_k{i,1} = Data_Input{i,1};
+end
+Am_1_k = sparse(cell2mat(Am_1_k));
+
+% Creating Am_1_k_Ac_1_k = (Am_1_k - Ac_1_k); Ac_1_k = S_Sigma_1_k*Data_Misc.Sigma_stacked
+Am_1_k_Ac_1_k = Am_1_k - S_Sigma_1_k*Data_Misc.Sigma_stacked;
+% End =====================================================================
+
+% =========================================================================
+% Computing adjustments
+% =========================================================================
+% Computing the adjusted Fluences
+Data_Output.Phi_1_k_adjusted = Phi_1_k + Cov_Phi_S_Phi * (h\Am_1_k_Ac_1_k);
+% Computing the adjusted Covariance of Fluences
+Data_Output.Cov_Phi_1_k_adjusted = Data_Cov_Phi_mat - Cov_Phi_S_Phi*(h\S_Phi_Cov_Phi);
+% Computing the adjusted Correlation of Fluences
+Data_Output.Cor_Phi_1_k_adjusted = Cov2Cor(Data_Output.Cov_Phi_1_k_adjusted);
+% Computing the adjusted Standard Deviation of Fluence
+Data_Output.Phi_1_k_sd_adjusted = calc_standard_deviation(Data_Output.Cov_Phi_1_k_adjusted,Data_Output.Phi_1_k_adjusted);
+% Computing the adjustement of Fluence in %
+Data_Output.Phi_1_k_adjustment_pc = calc_adjustment_pc(Data_Output.Phi_1_k_adjusted,Data_Input,3,Data_Misc.n_Env);
+% Computing the adjusted Activities
+Data_Output.A_1_k_adjusted = Am_1_k - Data_Cov_A_mat * (h\Am_1_k_Ac_1_k);
+% Computing the adjusted Covariance of Activities
+Data_Output.Cov_A_1_k_adjusted = Data_Cov_A_mat - Data_Cov_A_mat * (h\Data_Cov_A_mat);
+% Computing the adjusted Correlation of Activities
+Data_Output.Cor_A_1_k_adjusted = Cov2Cor(Data_Output.Cov_A_1_k_adjusted);
+% Computing the adjusted Standard Deviation of Activities
+Data_Output.A_1_k_sd_adjusted = calc_standard_deviation(Data_Output.Cov_A_1_k_adjusted,Data_Output.A_1_k_adjusted);
+% Computing the adjustement of Activities in %
+Data_Output.A_1_k_adjustment_pc = calc_adjustment_pc(Data_Output.A_1_k_adjusted,Data_Input,1,Data_Misc.n_Env);
+% Computing chi square
+Data_Output.chi_square = Am_1_k_Ac_1_k' * (h\Am_1_k_Ac_1_k);
+% Computing chi square to each reaction
+Data_Output.chi_square_reaction = calc_chi_square_reaction(Data_Output.chi_square,h,Am_1_k_Ac_1_k);
+% End =====================================================================
+end % function
+
+function mat = Cov2Cor(mat)
+
+[row,col] = size(mat);
+
+for k=1:row
+    if mat(k,k)~=0
+        var(k) = 1/(sqrt(mat(k,k)));
+    else
+        var(k) = 0;
+    end
+end
+Var = sparse(diag(var));
+mat = Var*mat*Var;
+for k=1:length(var)
+    if var(k)==0;
+        mat(k,k)=1;
+    end %if
+end %for
+end %function
+
+function vecOut = calc_chi_square_reaction(chisq,h,vecIn)
+vecOut = zeros(length(vecIn),1);
+for i = 1:length(vecIn)
+    vec2 = vecIn;   % Set auxilliary vector to the difference of the activities (Am_1_k - Ac_1_k)
+    vec2(i) = [];    % Set the i's entity to zero
+    h2 = h;
+    h2(:,i) = [];
+    h2(i,:) = [];
+    vecOut(i) = chisq - vec2'*(h2\vec2);
+end
+end
+
+function vecOut = calc_standard_deviation(Mat,vecIn)
+% Calculates the standard deviation according to Mat and vecIn
+for k = 1:length(vecIn)
+    if Mat(k,k) == 0
+        vecOut(k,1) = 0;
+    else
+        vecOut(k,1) = sqrt(Mat(k,k))/vecIn(k)*100;
+    end
+end
+end
+
+function vecOut = calc_adjustment_pc(vecInAdjusted,Data_Input,entity,n_Env)
+% calculates the adjustment of vecInAdjusted to vecInPrior in %
+vecInPrior = [];
+for i=1:n_Env
+    vecInPrior = [vecInPrior;Data_Input{i,entity}];
+end
+if length(vecInAdjusted) ~= length(vecInPrior)
+    wrndlg('Error occurs at computing the adjsutment in %. Length of prior and adjusted vector are not equal!');
+    return;
+end
+for k = 1:length(vecInAdjusted)        
+        if vecInPrior(k) == 0
+            vecOut(k,1) = 0;
+        else
+            vecOut(k,1) = (vecInAdjusted(k)/vecInPrior(k)-1)*100;
+        end
+end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

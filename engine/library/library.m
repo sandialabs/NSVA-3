@@ -1,0 +1,54 @@
+% type: sriptfile 
+% describtion: creates vector of strings containing isotopes of the library
+% note:
+
+handles.lib = ['23Na  (n,g)  24Na         ';
+               '24Mg  (n,p)  24Na         ';
+               '27Al  (n,a)  24Na         ';
+               '32S   (n,p)  32P          ';
+               '45Sc  (n,g)  46Sc         ';
+               '46Ti  (n,p)  46Sc         ';
+               '47Ti  (n,p)  47Sc         ';
+               '48Ti  (n,p)  48Sc         ';
+               '55Mn  (n,g)  56Mn         ';
+               '55Mn  (n,2n) 54Mn         ';
+               '54Fe  (n,p)  54Mn         ';
+               '56Fe  (n,p)  56Mn         ';
+               '58Fe  (n,g)  59Fe         ';
+               '59Co  (n,p)  59Fe         ';
+               '59Co  (n,g)  60Co         ';
+               '59Co  (n,2n) 58Co         ';
+               '58Ni  (n,p)  58Co         ';
+               '58Ni  (n,2n) 57Ni         ';
+               '63Cu  (n,g)  64Cu         ';
+               '63Cu  (n,a)  60Co         ';
+               '64Zn  (n,p)  64Cu         ';
+               '90Zr  (n,2n) 89Zr         ';
+               '93Nb  (n,2n) 92Nb         ';
+               '115In (n,g) 116Ln         ';
+               '115In (n,n) 115mIn        ';
+               '197Au (n,g) 198Au         ';
+               '235U  (n,f) 140La/95Zr    ';
+               '238U  (n,f) 140La/95Zr    ';
+               '237Np (n,f) 140La/95Zr    ';
+               '237Np (n,f) 140La/95Zr \Bf';               
+               '239Pu (n,f) 140La/95Zr    ';
+               '235U+238U(trace) \Bf      ';
+               '238U+235U(trace) \Bf      ';
+               '239Pu+240Pu+241Pu \Bf     ';
+               '23Na  (n,g)  24Na \Cd     ';
+               '23Na  (n,g)  24Na \bare-Cd';
+               '45Sc  (n,g)  46Sc \Cd     ';
+               '45Sc  (n,g)  46Sc \bare-Cd';
+               '55Mn  (n,g)  56Mn \Cd     ';
+               '55Mn  (n,g)  56Mn \bare-Cd';
+               '58Fe  (n,g)  59Fe \Cd     ';
+               '58Fe  (n,g)  59Fe \bare-Cd';
+               '59Co  (n,g)  60Co \Cd     ';
+               '59Co  (n,g)  60Co \bare-Cd';
+               '63Cu  (n,g)  64Cu \Cd     ';
+               '63Cu  (n,g)  64Cu \bare-Cd';
+               '115In (n,g) 116Ln \Cd     ';
+               '115In (n,g) 116Ln \bare-Cd';
+               '197Au (n,g) 198Au \Cd     ';
+               '197Au (n,g) 198Au \bare-Cd'];         

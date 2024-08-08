@@ -1,0 +1,24 @@
+% % type: sriptfile 
+% describtion: updates GUI input panel of environment one according to the
+%              provided vector of involved reactions
+% =========================================================================
+%
+% maybe check on this one later
+for i = 1:length(handles.Data_Input{10})
+    if handles.Data_Input{10}(1) == 1
+        set(handles.checkboxList(i), 'Value', 1)
+    elseif handles.Data_Input{10}(1) == 0
+        set(handles.checkboxList(i), 'Value', 0)
+    end
+end
+% =========================================================================
+
+% make first panel in the Gui visible for the user
+% set(handles.tabE1_a, 'Visible', 'on');
+% 
+% % make the selected reactions visible for the user
+if m_E1(1) == 1
+    set(handles.checkboxE1_01, 'Value', 1)
+elseif m_E1(1) == 0
+    set(handles.checkboxE1_01, 'Value', 0)
+end 
